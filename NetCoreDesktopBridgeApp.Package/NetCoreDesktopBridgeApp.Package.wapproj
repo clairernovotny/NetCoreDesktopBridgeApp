@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
     <VisualStudioVersion>15.0</VisualStudioVersion>
   </PropertyGroup>
-
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x86">
       <Configuration>Debug</Configuration>
@@ -31,32 +29,27 @@
       <Platform>AnyCPU</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-
   <PropertyGroup>
     <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
   </PropertyGroup>
-
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
-
   <PropertyGroup>
     <ProjectGuid>bdf14394-5a7a-4cbe-bfe1-f0ad38b30227</ProjectGuid>
     <TargetPlatformVersion>10.0.17763.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
-    
     <PackageCertificateKeyFile>NetCoreDesktopBridgeApp.Package_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <EntryPointProjectUniqueName>..\NetCoreDesktopBridgeApp\NetCoreDesktopBridgeApp.csproj</EntryPointProjectUniqueName>
     
+    <!-- Need to explicitly set the debugger type -->
+    <DebuggerType>CoreClr</DebuggerType>
   </PropertyGroup>
-
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    
     <None Include="NetCoreDesktopBridgeApp.Package_TemporaryKey.pfx" />
-    
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="Images\LockScreenLogo.scale-200.png" />
     <Content Include="Images\Square150x150Logo.scale-200.png" />
@@ -65,7 +58,32 @@
     <Content Include="Images\StoreLogo.png" />
     <Content Include="Images\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
-
+  <ItemGroup>
+    
+    <!-- Added Properties to build the RID-specific version and be self-contained -->
+    <ProjectReference Include="..\NetCoreDesktopBridgeApp\NetCoreDesktopBridgeApp.csproj"
+                      SkipGetTargetFrameworkProperties="true"
+                      Properties="RuntimeIdentifier=win-x86;SelfContained=true"
+                      />
+  </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+
+  <!-- Additions for .NET Core 3 target -->
+  <PropertyGroup>
+    <PackageOutputGroups>@(PackageOutputGroups);__GetPublishItems</PackageOutputGroups>
+  </PropertyGroup>
+  <Target Name="_ValidateAppReferenceItems" />
+  <Target Name="_FixEntryPoint" AfterTargets="_ConvertItems">
+    <PropertyGroup>
+      <EntryPointExe>NetCoreDesktopBridgeApp\NetCoreDesktopBridgeApp.exe</EntryPointExe>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PublishReferences" BeforeTargets="ExpandProjectReferences">
+    <MSBuild Projects="@(ProjectReference->'%(FullPath)')"
+         BuildInParallel="$(BuildInParallel)"
+         Targets="Publish"
+    />
+  </Target>
 
 </Project>

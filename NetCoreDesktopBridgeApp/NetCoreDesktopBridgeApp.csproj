@@ -4,6 +4,20 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
+
+    <!-- Use RuntimeIdentifiers so that the restore calculates things correctly
+         We'll pass RuntimeIdentifier=win-x86 in the reference from the Packaging Project 
+    -->
+    <RuntimeIdentifiers>win-x86</RuntimeIdentifiers>
   </PropertyGroup>
+
+  <!-- Add the results of the publish into the output for the package -->
+  <Target Name="__GetPublishItems" DependsOnTargets="ComputeFilesToPublish" Returns="@(_PublishItem)">
+    <ItemGroup>
+      <_PublishItem Include="@(ResolvedFileToPublish->'%(FullPath)')" TargetPath="%(ResolvedFileToPublish.RelativePath)" OutputGroup="__GetPublishItems" />
+      <_PublishItem Include="$(ProjectDepsFilePath)" TargetPath="$(ProjectDepsFileName)" />
+      <_PublishItem Include="$(ProjectRuntimeConfigFilePath)" TargetPath="$(ProjectRuntimeConfigFileName)" />
+    </ItemGroup>
+  </Target>
 
 </Project>
